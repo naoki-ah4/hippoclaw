@@ -4,6 +4,7 @@
   "author": "naoki-ah4",
   "license": "UNLICENSED",
   "scripts": {
+    "build": "pnpm -r build",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "sandbox:inspect": "docker compose -f sandbox/compose.yaml run --rm sandbox plugins inspect hippoclaw-memory --runtime --json",

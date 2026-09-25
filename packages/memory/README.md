@@ -9,7 +9,7 @@ memory-core 相当機能。
   - `flushPlanResolver` は `null`
   - `runtime`（検索と読み出し）
 - 索引
-  - `include`（workspace 相対の glob）で対象を決める
+  - `include`（workspace 相対の glob）で対象を決め、`exclude` で外す
   - Markdown を読んで検索する
 - ツール
   - `memory_search`
