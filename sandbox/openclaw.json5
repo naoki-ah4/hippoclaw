@@ -85,7 +85,8 @@
       },
       // slot を取られても memory-core は dreaming sidecar として残る。dreaming も要らないので丸ごと切る
       "memory-core": { enabled: false },
-      // active-memory は純正のまま（未指定）。recall を書く時に切る
+      // active-memory の lane 1 はトリガー句の仕組みで hippoclaw-memory では動かず、lane 2 はサブエージェント。検証では切る
+      "active-memory": { enabled: false },
     },
   },
 }
