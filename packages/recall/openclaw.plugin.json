@@ -1,0 +1,27 @@
+{
+  "id": "hippoclaw-recall",
+  "name": "hippoclaw-recall",
+  "description": "active-memory 相当。毎ターン、着信した発言で記憶を検索し、結果をプロンプトに差し込む",
+  "categories": ["memory"],
+  "activation": { "onStartup": true },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "maxResults": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 20,
+        "description": "差し込む件数の上限",
+        "default": 3
+      },
+      "maxChars": {
+        "type": "integer",
+        "minimum": 100,
+        "maximum": 8000,
+        "description": "差し込む本文の合計文字数の上限",
+        "default": 1200
+      }
+    }
+  }
+}
