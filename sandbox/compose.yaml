@@ -35,6 +35,7 @@ x-openclaw: &openclaw
     - ./workspace:/home/node/workspace
     - ./openclaw.json5:/home/node/sandbox/openclaw.json5:ro
     - ../packages/memory/dist:/home/node/plugins/hippoclaw-memory:ro
+    - ../packages/recall/dist:/home/node/plugins/hippoclaw-recall:ro
 
 services:
   # CLI 用。一発実行（agent exec / plugins inspect）に使う
