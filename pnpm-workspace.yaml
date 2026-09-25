@@ -1,0 +1,10 @@
+packages:
+  - packages/*
+allowBuilds:
+  esbuild: true
+  # openclaw は型のためだけに入れる。postinstall（同梱プラグインの準備）もネイティブ依存も要らない
+  openclaw: false
+  "@google/genai": false
+  koffi: false
+  protobufjs: false
+  tree-sitter-bash: false

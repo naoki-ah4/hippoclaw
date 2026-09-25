@@ -1,5 +1,19 @@
 {
   "name": "hippoclaw",
+  "private": true,
   "author": "naoki-ah4",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "scripts": {
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "sandbox:inspect": "docker compose -f sandbox/compose.yaml run --rm sandbox plugins inspect hippoclaw-memory --runtime --json",
+    "sandbox:up:stub": "docker compose -f sandbox/compose.yaml --profile stub up -d stub",
+    "sandbox:up:ollama": "docker compose -f sandbox/compose.yaml --profile ollama up -d --wait ollama && docker compose -f sandbox/compose.yaml --profile ollama run --rm ollama-init",
+    "sandbox:exec": "docker compose -f sandbox/compose.yaml --profile stub up -d stub && docker compose -f sandbox/compose.yaml run --rm sandbox agent exec --config /home/node/sandbox/openclaw.json5 --cwd /home/node/workspace --json",
+    "sandbox:exec:ollama": "HIPPOCLAW_MODEL=ollama/gemma4:e2b-dev docker compose -f sandbox/compose.yaml --profile ollama run --rm sandbox agent exec --config /home/node/sandbox/openclaw.json5 --cwd /home/node/workspace --json",
+    "sandbox:down": "docker compose -f sandbox/compose.yaml --profile stub --profile ollama --profile gateway down",
+    "sandbox:gateway:up": "docker compose -f sandbox/compose.yaml --profile ollama --profile gateway up -d --wait ollama gateway",
+    "sandbox:gateway:restart": "docker compose -f sandbox/compose.yaml --profile gateway restart gateway",
+    "sandbox:chat": "docker compose -f sandbox/compose.yaml --profile gateway exec gateway openclaw agent --session-key agent:main:direct:sandbox --json --message"
+  }
 }
