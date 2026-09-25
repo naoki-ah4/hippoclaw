@@ -1,9 +1,10 @@
 import type { OpenClawPluginDefinition, OpenClawPluginToolContext } from "openclaw/plugin-sdk/plugin-entry";
-import { resolveAgentWorkspaceDir } from "openclaw/plugin-sdk/agent-runtime";
+import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "openclaw/plugin-sdk/agent-runtime";
 import { createCapability } from "./capability.ts";
 import { resolveConfig } from "./config.ts";
 import { createStore } from "./store.ts";
-import { memoryGetTool, memorySearchTool } from "./tools.ts";
+import { memoryAppendTool, memoryGetTool, memorySearchTool } from "./tools.ts";
+import { appendMemory } from "./append.ts";
 
 // name と description はマニフェストの物を使う
 const entry: OpenClawPluginDefinition = {
@@ -34,6 +35,29 @@ const entry: OpenClawPluginDefinition = {
       },
       { names: ["memory_get"] },
     );
+    api.registerTool(
+      (ctx) => {
+        const store = storeFor(ctx);
+        return store ? memoryAppendTool(store) : null;
+      },
+      { names: ["memory_append"], optional: true },
+    );
+
+    // 人が直接書く口。モデルを通さない
+    api.registerCommand({
+      name: "remember",
+      description: "Append a line to today's memory file",
+      acceptsArgs: true,
+      async handler(ctx) {
+        const text = ctx.args?.trim();
+        if (!text) return { text: "Usage: /remember <text>" };
+
+        const rootDir = resolveAgentWorkspaceDir(ctx.config, ctx.agentId ?? resolveDefaultAgentId(ctx.config));
+        const { path, line } = await appendMemory(rootDir, text);
+
+        return { text: `${path}: ${line}` };
+      },
+    });
 
     api.logger.info(`hippoclaw-memory: registered (include=${config.include.join(", ")})`);
   },

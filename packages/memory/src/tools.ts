@@ -2,6 +2,7 @@
 import { jsonResult, readStringParam } from "openclaw/plugin-sdk/core";
 import { readPositiveIntegerParam } from "openclaw/plugin-sdk/agent-runtime";
 import type { AnyAgentTool } from "openclaw/plugin-sdk/plugin-entry";
+import { appendMemory } from "./append.ts";
 import type { MemoryConfig } from "./config.ts";
 import type { MemoryStore } from "./store.ts";
 
@@ -55,5 +56,27 @@ export const memoryGetTool = (store: MemoryStore): AnyAgentTool => ({
     const lines = readPositiveIntegerParam(params, "lines");
 
     return jsonResult(await store.files.read(relPath, { from, lines }));
+  },
+});
+
+/** 任意ツール。tools.allow で明示した時だけモデルに見える */
+export const memoryAppendTool = (store: MemoryStore): AnyAgentTool => ({
+  label: "Memory Append",
+  name: "memory_append",
+  // 今日の記憶ファイルに 1 行足す。ユーザーが覚えておいてほしいと言った事実だけ。要約や推測は書かない
+  description:
+    "Append one line to today's memory file. Use only for a fact the user asked you to remember. Do not write summaries or guesses.",
+  parameters: {
+    type: "object",
+    properties: {
+      text: { type: "string", description: "The fact to remember, in one line" },
+    },
+    required: ["text"],
+    additionalProperties: false,
+  },
+  async execute(_toolCallId, raw) {
+    const text = readStringParam(raw as Params, "text", { required: true });
+
+    return jsonResult(await appendMemory(store.files.rootDir, text));
   },
 });

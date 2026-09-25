@@ -13,8 +13,15 @@
   "contracts": {
     "tools": [
       "memory_search",
-      "memory_get"
+      "memory_get",
+      "memory_append"
     ]
+  },
+  "toolMetadata": {
+    "memory_append": {
+      "optional": true,
+      "sideEffecting": true
+    }
   },
   "configSchema": {
     "type": "object",

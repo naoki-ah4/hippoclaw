@@ -14,8 +14,10 @@ memory-core 相当機能。
 - ツール
   - `memory_search`
   - `memory_get`
-- `/remember <本文>`
-  - モデルを通さず `memory/YYYY-MM-DD.md` に追記
+  - `memory_append`（任意。`tools.allow` に書いた時だけモデルに見える）
+- 追記
+  - `memory/YYYY-MM-DD.md` に 1 行足す
+  - 人は `/remember <本文>`、モデルは `memory_append`
 
 ## その他
 - 転写（sessions）は索引しない。`sessions_search` に任せる。
