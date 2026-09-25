@@ -38,7 +38,7 @@
             // sandbox/ollama/provision.sh が作る。num_ctx 32768
             id: "gemma4:e2b-dev",
             name: "gemma4:e2b-dev",
-            reasoning: false,
+            reasoning: true,
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
             contextWindow: 32768,
@@ -55,11 +55,19 @@
       workspace: "/home/node/workspace",
       skipBootstrap: true,
       heartbeat: { every: "0m" },
+      models: {
+        // 考えさせないと tool call を本文に書いてしまう。遅くてもここは切らない
+        "ollama/gemma4:e2b-dev": { params: { thinking: "low" } },
+      },
     },
   },
 
   // Tool Search の裏にツールを隠さない。小さいモデルは探しに行けない（本番の private と同じ判断）
-  tools: { toolSearch: false },
+  tools: {
+    toolSearch: false,
+    // 検証では記憶のツールだけを見せる。小さいモデルが web_search に流れるのを防ぐ
+    allow: ["memory_search", "memory_get"],
+  },
 
   plugins: {
     load: { paths: ["/home/node/plugins"] },
