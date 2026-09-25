@@ -1,2 +1,17 @@
+# 手元のメモ・経緯。リポジトリには入れない
 local/
-node_modules
+
+# 依存とビルド成果物
+node_modules/
+dist/
+*.tsbuildinfo
+
+# 検証コンテナ（sandbox/）が書くもの
+# state は openclaw の状態。壊れたら消してよい。ディレクトリだけ残す
+sandbox/state/*
+!sandbox/state/.gitkeep
+# compose の環境変数（HIPPOCLAW_MODEL / OLLAMA_GPU_ID など）
+sandbox/.env
+
+# OS・エディタ
+.DS_Store

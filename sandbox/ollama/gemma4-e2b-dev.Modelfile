@@ -1,0 +1,7 @@
+# 検証用。~/openclaw/private/models/gemma4-e2b-gpu.Modelfile の要点だけ写した。
+# E2B も Per-Layer Embeddings がメインメモリに残るので、VRAM に載るのはディスクサイズより小さい。
+FROM gemma4:e2b-it-qat
+# 全層 GPU。載らなければ黙って遅くなるのではなく止まる
+PARAMETER num_gpu 99
+# OpenClaw のシステムプロンプトは 6k〜10k tokens。既定のままだと切り詰められる
+PARAMETER num_ctx 32768

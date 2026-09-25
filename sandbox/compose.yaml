@@ -1,0 +1,116 @@
+# hippoclaw の検証コンテナ。~/openclaw の 2 体とは別プロジェクトで、相乗りもしない。
+#
+#   pnpm sandbox:inspect                 モデル無し。スロット選択・ツール登録を見る
+#   pnpm sandbox:exec "..."              スタブモデルで 1 ターン
+#   pnpm sandbox:up:ollama               専用の ollama を上げてモデルを入れる（初回は DL が走る）
+#   pnpm sandbox:exec:ollama "..."       専用 ollama の小さいモデルで 1 ターン
+#   pnpm sandbox:down                    全部落とす。モデルの volume は残る
+#
+# モデルは HIPPOCLAW_MODEL で切り替える
+#   stub/stub               既定。決定的なスタブ（profile: stub）
+#   ollama/gemma4:e2b-dev   専用 ollama。sandbox/ollama/provision.sh が作る（profile: ollama）
+name: hippoclaw-sandbox
+
+x-openclaw: &openclaw
+  image: ${OPENCLAW_IMAGE:-ghcr.io/openclaw/openclaw:2026.9.4}
+  user: "1000:1000"
+  init: true
+  working_dir: /home/node
+  environment: &openclaw-env
+      HOME: /home/node
+      OPENCLAW_HOME: /home/node
+      OPENCLAW_STATE_DIR: /home/node/.openclaw
+      OPENCLAW_CONFIG_PATH: /home/node/sandbox/openclaw.json5
+      OPENCLAW_SANDBOX: "0"
+      NODE_ENV: production
+      TZ: ${TZ:-Asia/Tokyo}
+      HIPPOCLAW_MODEL: ${HIPPOCLAW_MODEL:-stub/stub}
+      OPENCLAW_GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN:-hippoclaw-sandbox}
+      OLLAMA_API_KEY: ollama-local
+      STUB_API_KEY: stub
+      # OPENCLAW_LOG_LEVEL=debug で上げ直すと、active-memory のサブエージェントの返答まで出る
+      OPENCLAW_LOG_LEVEL: ${OPENCLAW_LOG_LEVEL:-info}
+  volumes:
+    - ./state:/home/node/.openclaw
+    - ./workspace:/home/node/workspace
+    - ./openclaw.json5:/home/node/sandbox/openclaw.json5:ro
+    - ../packages/memory/dist:/home/node/plugins/hippoclaw-memory:ro
+
+services:
+  # CLI 用。一発実行（agent exec / plugins inspect）に使う
+  sandbox:
+    <<: *openclaw
+    # 既定の command は gateway。ここでは CLI をそのまま叩けるように openclaw を entrypoint にする
+    entrypoint: ["tini", "-s", "--", "openclaw"]
+
+  # Gateway 用。active-memory のようにツール認可の指紋が要るフックは、
+  # agent exec では走らない。Gateway 経由の turn で試すときはこちらを上げて
+  #   docker compose -f sandbox/compose.yaml exec gateway openclaw agent --session-key agent:main:sandbox --message "..."
+  gateway:
+    <<: *openclaw
+    profiles: ["gateway"]
+    # working_dir を /home/node にしているので、イメージ既定の相対パスではなく絶対パスで起動する
+    command: ["node", "/app/openclaw.mjs", "gateway"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:18789/healthz || exit 1"]
+      interval: 10s
+      timeout: 10s
+      start_period: 60s
+      retries: 6
+
+  # OpenAI 互換の決定的なスタブ。sandbox/stub-model/server.mjs
+  stub:
+    profiles: ["stub"]
+    image: node:24-alpine
+    user: "1000:1000"
+    command: ["node", "/srv/server.mjs"]
+    environment:
+      PORT: "4000"
+    volumes:
+      - ./stub-model:/srv:ro
+
+  # 検証専用の ollama。~/openclaw の ollama とは volume も network も別
+  ollama:
+    profiles: ["ollama"]
+    image: ollama/ollama:${OLLAMA_TAG:-latest}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["${OLLAMA_GPU_ID:-0}"]
+              capabilities: [gpu]
+    environment:
+      OLLAMA_HOST: 0.0.0.0:11434
+      OLLAMA_KEEP_ALIVE: ${OLLAMA_KEEP_ALIVE:-5m}
+      OLLAMA_MAX_LOADED_MODELS: "2"
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_FLASH_ATTENTION: "1"
+      OLLAMA_KV_CACHE_TYPE: q8_0
+    volumes:
+      - ollama-models:/root/.ollama
+      - ./ollama:/models:ro
+    # ホストには出さない。中を見るなら docker compose -f sandbox/compose.yaml exec ollama ollama list
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      start_period: 20s
+      retries: 6
+
+  # up のたびに走って冪等。手で pull / create しない
+  ollama-init:
+    profiles: ["ollama"]
+    image: ollama/ollama:${OLLAMA_TAG:-latest}
+    restart: "no"
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    volumes:
+      - ./ollama:/models:ro
+    entrypoint: ["/bin/sh", "/models/provision.sh"]
+
+volumes:
+  ollama-models:
