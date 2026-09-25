@@ -72,5 +72,9 @@ export const createCapability = (config: MemoryConfig): MemoryPluginCapability =
     resolveMemoryBackendConfig() {
       return { backend: "builtin" };
     },
+    // MEMORY.md と USER.md を毎ターン載せてよいかの問い合わせ。書いた主体を記録していないので純正の既定と同じ agent
+    async classifyWorkspaceMemoryPaths({ relativePaths }) {
+      return relativePaths.map((relativePath) => ({ relativePath, originClass: "agent" as const }));
+    },
   },
 });
