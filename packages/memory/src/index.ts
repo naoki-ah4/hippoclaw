@@ -1,15 +1,15 @@
-import { definePluginEntry, type OpenClawPluginApi } from "openclaw/plugin-sdk/plugin-entry";
+import type { OpenClawPluginDefinition } from "openclaw/plugin-sdk/plugin-entry";
+import { createCapability } from "./capability.ts";
+import { resolveConfig } from "./config.ts";
 
-export default definePluginEntry({
+// name と description はマニフェストの物を使う
+const entry: OpenClawPluginDefinition = {
   id: "hippoclaw-memory",
-  name: "hippoclaw-memory",
-  description: "memory-core 相当。plugins.slots.memory を取り、許可リストで索引を作る",
-  register(api: OpenClawPluginApi) {
-    api.registerMemoryCapability({
-      promptBuilder: () => [],
-      // 圧縮前 flush には乗らない
-      flushPlanResolver: () => null,
-    });
-    api.logger.info("hippoclaw-memory: registered");
+  register(api) {
+    const config = resolveConfig(api.pluginConfig);
+    api.registerMemoryCapability(createCapability(config));
+    api.logger.info(`hippoclaw-memory: registered (include=${config.include.join(", ")})`);
   },
-});
+};
+
+export default entry;
