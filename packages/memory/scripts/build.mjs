@@ -20,7 +20,7 @@ await build({
   platform: "node",
   target: "node24",
   external: ["node:*", "openclaw", "openclaw/*"],
-  sourcemap: "inline",
+  sourcemap: true,
   logLevel: "info",
 });
 await copyFile(path.join(pkgRoot, "openclaw.plugin.json"), path.join(dist, "openclaw.plugin.json"));
