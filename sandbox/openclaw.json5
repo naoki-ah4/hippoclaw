@@ -87,13 +87,12 @@
       "hippoclaw-recall": {
         enabled: true,
         hooks: { allowConversationAccess: true },
-        config: { maxResults: 3, maxChars: 1200 },
       },
       // 会話を要約して追記する。検証では 1 ターンごとに走らせる（minChars: 1）
       "hippoclaw-journal": {
         enabled: true,
         hooks: { allowConversationAccess: true },
-        config: { minChars: 1, idleMinutes: 15, maxInputChars: 4000, assistantHead: 200 },
+        config: { minChars: 1 },
       },
       // slot を取られても memory-core は dreaming sidecar として残る。dreaming も要らないので丸ごと切る
       "memory-core": { enabled: false },
