@@ -12,10 +12,10 @@ dreaming 相当機能。
   - 未要約の user 発言の合計文字数（`minChars`）
   - 無操作時間（`idleMinutes`）
 - transcript の読み出し
-  - sqlite の `transcript_events` を `seq` で読む。
+  - OpenClaw の transcript を、前回の続きから cursor で読む
 - 要約状況の管理
   - セッション ID ごとに「どこまで処理したか」を保持
-  - plugin の keyed store に保存
+  - agent の state ディレクトリの sqlite に保存（keyed store は信頼済みプラグインにしか開かれていない）
 - 追記 (重複除去あり)
 
 ## その他
