@@ -6,6 +6,10 @@ import { summarize } from "./summarize.ts";
 import { readDelta } from "./transcript.ts";
 
 const READ_MAX_MESSAGES = 200;
+
+const pad = (n: number): string => String(n).padStart(2, "0");
+/** ローカル時刻の YYYY-MM-DD。記憶ファイルの日付と揃える */
+const todayOf = (now: Date): string => `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export type DrainTarget = {
@@ -51,7 +55,7 @@ export const drain = async (target: DrainTarget, minUserChars: number, config: J
     if (delta.utterances.length === 0 || userChars(delta.utterances) < minUserChars) return;
 
     for (const batch of buildBatches(delta.utterances, { ...config, hardMaxChars: target.hardMaxChars })) {
-      const lines = await summarize(deps.llm, { batch, model: config.model });
+      const lines = await summarize(deps.llm, { batch, today: todayOf(new Date()), model: config.model });
       const result = await appendLines(target.rootDir, lines, { dedupe: true });
       deps.log(`${result.path} +${result.lines.length} (skipped ${result.skipped})`);
     }

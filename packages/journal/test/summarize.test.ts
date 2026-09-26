@@ -18,16 +18,17 @@ const fake = (reply: string) => {
 
 test("モデルの返事から箇条書きの行だけを拾う", async () => {
   const llm = fake("前置き\n- 車はプリウス\n\n- 好きな温泉は道後\n* 別記号\n-  \n");
-  assert.deepEqual(await summarize(llm, { batch: "user: 車はプリウス" }), ["車はプリウス", "好きな温泉は道後"]);
+  assert.deepEqual(await summarize(llm, { batch: "user: 車はプリウス", today: "2026-09-26" }), ["車はプリウス", "好きな温泉は道後"]);
 });
 
-test("バッチは user の発言として渡し、model は指定した時だけ付く", async () => {
+test("バッチは user の発言として渡し、今日の日付を指示に入れる。model は指定した時だけ付く", async () => {
   const llm = fake("");
-  await summarize(llm, { batch: "user: こんにちは", model: "ollama/gemma4:e2b-dev" });
-  await summarize(llm, { batch: "user: こんにちは" });
+  await summarize(llm, { batch: "user: こんにちは", today: "2026-09-26", model: "ollama/gemma4:e2b-dev" });
+  await summarize(llm, { batch: "user: こんにちは", today: "2026-09-26" });
 
-  const [withModel, without] = llm.calls as Array<{ model?: string; messages: Array<{ role: string; content: string }> }>;
+  const [withModel, without] = llm.calls as Array<{ model?: string; systemPrompt: string; messages: Array<{ role: string; content: string }> }>;
   assert.equal(withModel?.model, "ollama/gemma4:e2b-dev");
   assert.equal(without?.model, undefined);
+  assert.match(without?.systemPrompt ?? "", /Today is 2026-09-26\./);
   assert.deepEqual(without?.messages, [{ role: "user", content: "user: こんにちは" }]);
 });
