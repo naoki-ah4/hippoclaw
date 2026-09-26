@@ -32,6 +32,9 @@ importers:
 
   packages/memory:
     dependencies:
+      kysely:
+        specifier: ^0.29.6
+        version: 0.29.6
       valibot:
         specifier: ^1.5.0
         version: 1.5.0(typescript@5.9.3)
@@ -1183,6 +1186,10 @@ packages:
 
   kysely@0.29.5:
     resolution: {integrity: sha512-ooa+eSbBNPTo3MycPEuW5jdrxQdQwdtB3LC3h43FiXQbIry5tR0C5lDG7eealK0E4D7XjrnOP5DIUg/LyjRMYQ==}
+    engines: {node: '>=22.0.0'}
+
+  kysely@0.29.6:
+    resolution: {integrity: sha512-hHaB8C/rfzDDtr/t8YZwxAuPJTT0zHyaPoVzcXwDYhYNAgH/4sIfVhi/XLLIY+bL/FqaIJnjATDbi8ObSELmxg==}
     engines: {node: '>=22.0.0'}
 
   lie@3.3.0:
@@ -2806,6 +2813,8 @@ snapshots:
       '@koromix/koffi-win32-x64': 3.1.6
 
   kysely@0.29.5: {}
+
+  kysely@0.29.6: {}
 
   lie@3.3.0:
     dependencies:
