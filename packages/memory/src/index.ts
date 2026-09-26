@@ -5,20 +5,34 @@ import { resolveConfig } from "./config.ts";
 import { createStore } from "./store.ts";
 import { memoryAppendTool, memoryGetTool, memorySearchTool } from "./tools.ts";
 import { appendMemory } from "./append.ts";
+import { releaseSemantic, semanticFor } from "./semantic.ts";
 
 // name と description はマニフェストの物を使う
 const entry: OpenClawPluginDefinition = {
   id: "hippoclaw-memory",
   register(api) {
     const config = resolveConfig(api.pluginConfig);
-    api.registerMemoryCapability(createCapability(config));
+
+    // 意味検索の部品は semantic.ts がプロセスで一つずつ持つ。stop は後片付けだけで、
+    // 設定が変わった時の作り直しは、設定の中身を鍵にしているので stop が無くても起きる
+    api.registerService({
+      id: "hippoclaw-memory-index",
+      reload: { configPrefixes: ["memory.search", "agents"] },
+      start() {},
+      stop() {
+        releaseSemantic();
+      },
+    });
+
+    api.registerMemoryCapability(createCapability(config, semanticFor));
 
     // ツールは呼ばれた agent の workspace を見る。分からなければ出さない
     const storeFor = (ctx: OpenClawPluginToolContext) => {
       const cfg = ctx.getRuntimeConfig?.() ?? ctx.runtimeConfig ?? ctx.config ?? api.config;
       const rootDir = ctx.workspaceDir ?? (ctx.agentId ? resolveAgentWorkspaceDir(cfg, ctx.agentId) : undefined);
+      if (!rootDir) return null;
 
-      return rootDir ? createStore(rootDir, config) : null;
+      return createStore(rootDir, config, ctx.agentId ? semanticFor(cfg, ctx.agentId) : undefined);
     };
 
     api.registerTool(

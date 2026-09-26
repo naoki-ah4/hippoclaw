@@ -2,14 +2,18 @@
 import type { MemoryPluginCapability } from "openclaw/plugin-sdk/memory-host-core";
 import { resolveAgentWorkspaceDir } from "openclaw/plugin-sdk/agent-runtime";
 import type { MemoryConfig } from "./config.ts";
-import { createStore } from "./store.ts";
+import type { OpenClawConfig } from "openclaw/plugin-sdk/plugin-entry";
+import { createStore, type SemanticDeps } from "./store.ts";
+
+/** agent ごとの意味検索の部品。使えなければ undefined（語の一致だけで探す） */
+export type SemanticFor = (cfg: OpenClawConfig, agentId: string) => SemanticDeps | undefined;
 
 type MemoryRuntime = NonNullable<MemoryPluginCapability["runtime"]>;
 /** ホストが getMemorySearchManager から受け取る manager の型。SDK が export していないので辿る */
 type SearchManager = NonNullable<Awaited<ReturnType<MemoryRuntime["getMemorySearchManager"]>>["manager"]>;
 
-const createSearchManager = (rootDir: string, config: MemoryConfig): SearchManager => {
-  const { files, search } = createStore(rootDir, config);
+const createSearchManager = (rootDir: string, config: MemoryConfig, semantic: SemanticDeps | undefined): SearchManager => {
+  const { files, search } = createStore(rootDir, config, semantic);
 
   return {
     async search(query, opts) {
@@ -58,7 +62,7 @@ const promptSection = (availableTools: Set<string>): string[] => {
   ];
 };
 
-export const createCapability = (config: MemoryConfig): MemoryPluginCapability => ({
+export const createCapability = (config: MemoryConfig, semanticFor: SemanticFor): MemoryPluginCapability => ({
   // active-memory はこの名前のツールを決定的に呼ぶ
   deterministicRecallToolName: "memory_search",
   supportsPrivateTranscriptRecall: false,
@@ -67,7 +71,7 @@ export const createCapability = (config: MemoryConfig): MemoryPluginCapability =
   flushPlanResolver: () => null,
   runtime: {
     async getMemorySearchManager({ cfg, agentId }) {
-      return { manager: createSearchManager(resolveAgentWorkspaceDir(cfg, agentId), config) };
+      return { manager: createSearchManager(resolveAgentWorkspaceDir(cfg, agentId), config, semanticFor(cfg, agentId)) };
     },
     resolveMemoryBackendConfig() {
       return { backend: "builtin" };
