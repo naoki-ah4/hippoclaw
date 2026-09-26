@@ -11,18 +11,20 @@ test("無ければ日付の見出しから作る", async () => {
   const root = await mkdtemp(path.join(tmpdir(), "hippoclaw-memory-"));
   const result = await appendMemory(root, "車はプリウス", at);
 
-  assert.deepEqual(result, { path: "memory/2026-09-26.md", line: "- 09:05 車はプリウス" });
-  assert.equal(await readFile(path.join(root, result.path), "utf8"), "# 2026-09-26\n\n- 09:05 車はプリウス\n");
+  assert.deepEqual(result, { path: "memory/2026-09-26.md", line: "- 車はプリウス" });
+  assert.equal(await readFile(path.join(root, result.path), "utf8"), "# 2026-09-26\n\n- 車はプリウス\n");
 });
 
-test("あれば末尾に足す。改行は 1 行に潰す", async () => {
+test("あれば末尾に足す。改行は 1 行に潰す。同じ行は二度書かない", async () => {
   const root = await mkdtemp(path.join(tmpdir(), "hippoclaw-memory-"));
   await appendMemory(root, "一つ目", at);
-  await appendMemory(root, "  二つ目\n  続き  ", new Date(2026, 8, 26, 21, 40));
+  await appendMemory(root, "  二つ目\n  続き  ", at);
+  const again = await appendMemory(root, "一つ目", at);
 
+  assert.equal(again.line, "");
   assert.equal(
     await readFile(path.join(root, "memory/2026-09-26.md"), "utf8"),
-    "# 2026-09-26\n\n- 09:05 一つ目\n- 21:40 二つ目 続き\n",
+    "# 2026-09-26\n\n- 一つ目\n- 二つ目 続き\n",
   );
 });
 

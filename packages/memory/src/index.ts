@@ -55,7 +55,7 @@ const entry: OpenClawPluginDefinition = {
         const rootDir = resolveAgentWorkspaceDir(ctx.config, ctx.agentId ?? resolveDefaultAgentId(ctx.config));
         const { path, line } = await appendMemory(rootDir, text);
 
-        return { text: `${path}: ${line}` };
+        return { text: line ? `${path}: ${line}` : `${path}: already there` };
       },
     });
 

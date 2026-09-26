@@ -4,11 +4,8 @@ import path from "node:path";
 
 const pad = (n: number): string => String(n).padStart(2, "0");
 
-/** ローカル時刻の YYYY-MM-DD と HH:MM。TZ はプロセスの物 */
-export const stamp = (now: Date) => ({
-  date: `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`,
-  time: `${pad(now.getHours())}:${pad(now.getMinutes())}`,
-});
+/** ローカル時刻の YYYY-MM-DD。TZ はプロセスの物 */
+const dateOf = (now: Date): string => `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 
 export type AppendOptions = {
   now?: Date;
@@ -24,7 +21,7 @@ export type AppendResult = {
 
 /** memory/YYYY-MM-DD.md に行を足す。ファイルが無ければ日付の見出しから作る。改行は 1 行に潰す */
 export const appendLines = async (rootDir: string, texts: readonly string[], opts: AppendOptions = {}): Promise<AppendResult> => {
-  const { date } = stamp(opts.now ?? new Date());
+  const date = dateOf(opts.now ?? new Date());
   const relPath = `memory/${date}.md`;
   const absPath = path.join(rootDir, relPath);
 
@@ -43,11 +40,9 @@ export const appendLines = async (rootDir: string, texts: readonly string[], opt
   return { path: relPath, lines, skipped: texts.length - fresh.length };
 };
 
-/** /remember と memory_append。時刻を頭に付けた 1 行 */
+/** /remember と memory_append。1 行足す。同じ行が既にあれば書かない */
 export const appendMemory = async (rootDir: string, text: string, now = new Date()): Promise<{ path: string; line: string }> => {
-  const { time } = stamp(now);
-  const body = text.trim().replace(/\s*\n\s*/g, " ");
-  const { path: relPath, lines } = await appendLines(rootDir, [`${time} ${body}`], { now });
+  const { path: relPath, lines } = await appendLines(rootDir, [text], { now, dedupe: true });
 
   return { path: relPath, line: lines[0] ?? "" };
 };
