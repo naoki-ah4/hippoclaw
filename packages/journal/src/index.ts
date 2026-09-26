@@ -29,17 +29,29 @@ const entry: OpenClawPluginDefinition = {
       }
     };
 
-    api.on("agent_end", async (_event, ctx) => {
-      if (ctx.trigger !== "user") return;
-      const session = remember(ctx);
-      if (session) await run(session, config.minChars);
-    });
+    // 要約はフックの中で終える。フックが返るとモデルを呼べなくなるので、待てる時間のほうを延ばす。
+    // 既定の 30 秒では遅いモデルの要約が収まらない。運用側は hooks.timeouts で上書きできる
+    const hookOptions = { timeoutMs: 10 * 60_000 };
+
+    api.on(
+      "agent_end",
+      async (_event, ctx) => {
+        if (ctx.trigger !== "user") return;
+        const session = remember(ctx);
+        if (session) await run(session, config.minChars);
+      },
+      hookOptions,
+    );
 
     // /new の前に、量に関係なく残りを片付ける
-    api.on("before_reset", async (_event, ctx) => {
-      const session = remember(ctx);
-      if (session) await run(session, 1);
-    });
+    api.on(
+      "before_reset",
+      async (_event, ctx) => {
+        const session = remember(ctx);
+        if (session) await run(session, 1);
+      },
+      hookOptions,
+    );
 
     // 静かになった session を 1 分ごとに見る。timer の始める・止める・作り直すは gateway に持たせる
     let timer: NodeJS.Timeout | undefined;
