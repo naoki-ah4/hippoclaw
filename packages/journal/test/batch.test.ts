@@ -28,6 +28,11 @@ test("目安を超える 1 発言はそのまま。強制の線を超える発�
   assert.equal(hard.map((b) => b.replace(/^user: /, "")).join(""), long);
 });
 
+test("assistantHead が 0 なら assistant 発言は入らない", () => {
+  const batches = buildBatches([u("user", "一つ目"), u("assistant", "復唱"), u("user", "二つ目")], { maxInputChars: 100, assistantHead: 0, hardMaxChars: 1000 });
+  assert.deepEqual(batches, ["user: 一つ目\nuser: 二つ目"]);
+});
+
 test("空なら空", () => {
   assert.deepEqual(buildBatches([], { maxInputChars: 100, assistantHead: 10, hardMaxChars: 1000 }), []);
 });

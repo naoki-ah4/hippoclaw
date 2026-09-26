@@ -6,7 +6,7 @@ export const journalConfigSchema = v.pipe(
     minChars: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1)), 1500),
     idleMinutes: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1)), 15),
     maxInputChars: v.optional(v.pipe(v.number(), v.integer(), v.minValue(200)), 4000),
-    assistantHead: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0)), 200),
+    assistantHead: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0)), 0),
     maxAgeDays: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(365)), 30),
     model: v.optional(v.pipe(v.string(), v.trim(), v.nonEmpty())),
   }),
