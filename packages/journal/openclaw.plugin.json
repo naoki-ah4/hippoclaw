@@ -1,0 +1,53 @@
+{
+  "id": "hippoclaw-journal",
+  "name": "hippoclaw-journal",
+  "description": "dreaming 相当。会話を溜めて、まとめて要約し、memory/YYYY-MM-DD.md に追記する",
+  "categories": [
+    "memory"
+  ],
+  "activation": {
+    "onStartup": true
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "minChars": {
+        "type": "integer",
+        "minimum": 1,
+        "description": "ターン終了時に要約を走らせる、未要約の user 発言の合計文字数",
+        "default": 1500
+      },
+      "idleMinutes": {
+        "type": "integer",
+        "minimum": 1,
+        "description": "これだけ静かなら、量に関係なくまとめる",
+        "default": 15
+      },
+      "maxInputChars": {
+        "type": "integer",
+        "minimum": 200,
+        "description": "要約 1 回に渡す本文の目安。超えそうなら次の回に送る。1 発言がこれより長い時は超える。モデルの context から決まる上限は別にあり、常に守る",
+        "default": 4000
+      },
+      "assistantHead": {
+        "type": "integer",
+        "minimum": 0,
+        "description": "assistant 発言を先頭何字まで渡すか",
+        "default": 200
+      },
+      "maxAgeDays": {
+        "type": "integer",
+        "minimum": 1,
+        "description": "これより古い発言は要約の対象にしない（gateway を長く止めていた分は要約されない）。記憶ファイルは消えない。処理位置の記録も同じ期間で捨てる",
+        "default": 30,
+        "maximum": 365
+      },
+      "model": {
+        "type": "string",
+        "minLength": 1,
+        "description": "要約に使うモデル（provider/model）。省略時は agent のモデル"
+      }
+    }
+  }
+}

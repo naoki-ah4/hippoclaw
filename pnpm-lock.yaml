@@ -8,6 +8,28 @@ importers:
 
   .: {}
 
+  packages/journal:
+    dependencies:
+      '@hippoclaw/memory':
+        specifier: workspace:*
+        version: link:../memory
+      valibot:
+        specifier: ^1.5.0
+        version: 1.5.0(typescript@5.9.3)
+    devDependencies:
+      '@types/node':
+        specifier: ^24.7.0
+        version: 24.13.6
+      esbuild:
+        specifier: ^0.25.10
+        version: 0.25.12
+      openclaw:
+        specifier: 2026.9.4
+        version: 2026.9.4
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.3
+
   packages/memory:
     dependencies:
       valibot:
