@@ -46,27 +46,31 @@ export interface IndexDatabase {
 export const createVectorsTable = (dim: number) =>
   sql`CREATE VIRTUAL TABLE vectors USING vec0(embedding float[${sql.raw(String(dim))}] distance_metric=cosine)`;
 
-export const createTables = async (db: Kysely<IndexDatabase>): Promise<void> => {
-  const strict = sql`STRICT`;
+const strict = sql`STRICT`;
 
+/** meta を無ければ作る。版を読む前に毎回呼ぶ */
+export const ensureMetaTable = async (db: Kysely<IndexDatabase>): Promise<void> => {
   await db.schema.createTable("meta").ifNotExists()
     .addColumn("key", "text", (c) => c.primaryKey())
     .addColumn("value", "text", (c) => c.notNull())
     .modifyEnd(strict).execute();
+};
 
-  await db.schema.createTable("files").ifNotExists()
+/** 索引の中身の表を作る。無い前提なので、版が合わない時に dropIndexTables の後で呼ぶ */
+export const createIndexTables = async (db: Kysely<IndexDatabase>): Promise<void> => {
+  await db.schema.createTable("files")
     .addColumn("path", "text", (c) => c.primaryKey())
     .addColumn("mtime_ms", "integer", (c) => c.notNull())
     .addColumn("size", "integer", (c) => c.notNull())
     .modifyEnd(strict).execute();
 
-  await db.schema.createTable("texts").ifNotExists()
+  await db.schema.createTable("texts")
     .addColumn("id", "integer", (c) => c.primaryKey())
     .addColumn("text", "text", (c) => c.notNull().unique())
     .addColumn("embedded", "integer", (c) => c.notNull().defaultTo(0))
     .modifyEnd(strict).execute();
 
-  await db.schema.createTable("lines").ifNotExists()
+  await db.schema.createTable("lines")
     .addColumn("path", "text", (c) => c.notNull())
     .addColumn("line", "integer", (c) => c.notNull())
     .addColumn("text_id", "integer", (c) => c.notNull())
@@ -75,8 +79,8 @@ export const createTables = async (db: Kysely<IndexDatabase>): Promise<void> => 
     .modifyEnd(strict).execute();
 };
 
-/** 表を全部消す。版が変わった時に作り直すため */
-export const dropTables = async (db: Kysely<IndexDatabase>): Promise<void> => {
-  for (const table of ["files", "texts", "lines", "meta"] as const) await db.schema.dropTable(table).ifExists().execute();
+/** 索引の中身の表を全部消す。meta は版の記録なので残す */
+export const dropIndexTables = async (db: Kysely<IndexDatabase>): Promise<void> => {
+  for (const table of ["files", "texts", "lines"] as const) await db.schema.dropTable(table).ifExists().execute();
   await sql`DROP TABLE IF EXISTS vectors`.execute(db);
 };
