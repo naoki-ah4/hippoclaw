@@ -89,6 +89,12 @@
         hooks: { allowConversationAccess: true },
         config: { maxResults: 3, maxChars: 1200 },
       },
+      // 会話を要約して追記する。検証では 1 ターンごとに走らせる（minChars: 1）
+      "hippoclaw-journal": {
+        enabled: true,
+        hooks: { allowConversationAccess: true },
+        config: { minChars: 1, idleMinutes: 15, maxInputChars: 4000, assistantHead: 200 },
+      },
       // slot を取られても memory-core は dreaming sidecar として残る。dreaming も要らないので丸ごと切る
       "memory-core": { enabled: false },
       // active-memory の lane 1 はトリガー句の仕組みで hippoclaw-memory では動かず、lane 2 はサブエージェント。検証では切る
