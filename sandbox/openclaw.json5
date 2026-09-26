@@ -74,15 +74,7 @@
     // memory スロットを hippoclaw-memory に。memory-core は slot を取られると自動で disabled になる
     slots: { memory: "hippoclaw-memory" },
     entries: {
-      "hippoclaw-memory": {
-        enabled: true,
-        config: {
-          // 索引に入れるファイル。workspace 相対の glob。既定と同じ値を明示しておく
-          include: ["MEMORY.md", "memory/*.md"],
-          // memory_search が返す最大件数
-          maxResults: 6,
-        },
-      },
+      "hippoclaw-memory": { enabled: true },
       // 毎ターン差し込む。非同梱プラグインの before_prompt_build には hooks.allowConversationAccess が要る
       "hippoclaw-recall": {
         enabled: true,
