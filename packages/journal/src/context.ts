@@ -15,3 +15,10 @@ export const contextWindowOf = (cfg: OpenClawConfig, agentId: string, modelOverr
   const entry = findModelInCatalog(buildConfiguredModelCatalog({ cfg }), ref.provider, ref.model);
   return entry?.contextWindow;
 };
+
+/**
+ * どのバッチも超えない文字数。context（トークン）を 1 字 1 トークンと見て、その半分。
+ * 残り半分は指示文と出力と、日本語で 1 字が 2 トークンになる分の余裕。分からなければ目安と同じ
+ */
+export const hardMaxCharsOf = (contextTokens: number | undefined, maxInputChars: number): number =>
+  contextTokens === undefined ? maxInputChars : Math.max(1, Math.floor(contextTokens / 2));
