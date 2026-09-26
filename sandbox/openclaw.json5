@@ -3,9 +3,11 @@
 {
   gateway: {
     mode: "local",
-    bind: "loopback",
+    // コンテナの外（ホストの 127.0.0.1:18799）から Control UI を開くため、コンテナ内では lan で待つ
+    bind: "lan",
     port: 18789,
     auth: { mode: "token", token: "${OPENCLAW_GATEWAY_TOKEN}" },
+    controlUi: { allowedOrigins: ["http://localhost:18799", "http://127.0.0.1:18799"] },
   },
 
   models: {
