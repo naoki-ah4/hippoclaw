@@ -64,6 +64,11 @@
     },
   },
 
+  // 記憶の意味検索の埋め込み。検証専用の ollama の bge-m3
+  memory: {
+    search: { provider: "ollama", model: "bge-m3", remote: { baseUrl: "http://ollama:11434" } },
+  },
+
   // Tool Search の裏にツールを隠さない。小さいモデルは探しに行けない（本番の private と同じ判断）
   tools: {
     toolSearch: false,
